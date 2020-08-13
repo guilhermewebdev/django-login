@@ -1,0 +1,60 @@
+version: "3.7"
+
+services: 
+
+    backend:
+        build: ./server
+        restart: always
+        volumes: 
+            - ./server:/home/app/share
+        command: pypy3 manage.py runserver 0.0.0.0:8000
+        environment: 
+            PYTHONUNBUFFERED: 1
+        depends_on: 
+            - proxy
+            - db
+        networks: 
+            db:
+                ipv4_address: 172.25.20.10
+            backend:
+                ipv4_address: 172.35.10.10
+
+    proxy:
+        image: nginx
+        volumes: 
+            - ./proxy/nginx/conf.d:/etc/nginx/conf.d
+        ports:
+            - 80:80
+            - 443:443
+        command: [nginx-debug, '-g', 'daemon off;']
+        environment:
+            NGINX_PORT: 80      
+        networks: 
+            - backend
+        ports: 
+            - 80:80
+            - 443:443
+
+    db:
+        image: postgres
+        restart: always
+        environment: 
+            POSTGRES_DB: database
+            POSTGRES_USER: user
+            POSTGRES_PASSWORD: password
+        networks:
+            db:
+                ipv4_address: 172.25.20.15
+
+
+networks: 
+    backend:
+        driver: bridge
+        ipam:
+            config: 
+                - subnet: 172.35.10.1/16
+    db:
+        driver: bridge
+        ipam:
+            config: 
+                - subnet: 172.25.20.1/16
