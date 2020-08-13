@@ -1,0 +1,22 @@
+{
+  "name": "Authentication",
+  "version": "1.0.0",
+  "description": "Authentication app",
+  "main": "dist/index.js",
+  "repository": "https://github.com/guilhermewebdev/django-login.git",
+  "author": "Guilherme Isaias Silva",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "flow": "flow",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "typescript": "^3.9.7"
+  },
+  "devDependencies": {
+    "@types/react": "^16.9.46",
+    "flow-bin": "^0.131.0",
+    "react": "^16.13.1"
+  }
+}

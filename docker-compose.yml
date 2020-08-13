@@ -2,6 +2,14 @@ version: "3.7"
 
 services: 
 
+    client_auth:
+        build: ./server/authentication/assets
+        restart: always
+        volumes:
+            - ./server/authentication/assets:/app
+        command: tsc -w
+        stdin_open: true
+
     backend:
         build: ./server
         restart: always
@@ -13,6 +21,7 @@ services:
         depends_on: 
             - proxy
             - db
+            - client_auth
         networks: 
             db:
                 ipv4_address: 172.25.20.10
