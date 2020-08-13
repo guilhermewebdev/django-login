@@ -18,5 +18,5 @@ from django.urls import path
 from authentication.admin import system
 
 urlpatterns = [
-    path('/', system.urls),
+    path('', system.urls),
 ]
