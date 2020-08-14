@@ -1,1 +1,10 @@
-@import '../../styles/bootstrap.scss'
+@import '../../styles/bootstrap.scss';
+
+.form-header {
+    background-color: black;
+    height: 15px;
+}
+
+div {
+    border: 1 solid black;
+}

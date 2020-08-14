@@ -1,16 +1,16 @@
 import * as React from 'react';
 import { render } from 'react-dom';
 import './index.scss';
+import App from './App';
 
-const div = document.getElementById('app');
 
 Object.assign(document, {
-    main: async function () {
+    main: async () => {
         render(
             <React.StrictMode>
-                <div className="container">Olá mundo</div>
+                <App />
             </React.StrictMode>,
-            div
+            document.getElementById('app')
         )
     }
 })
