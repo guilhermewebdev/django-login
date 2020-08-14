@@ -11,12 +11,22 @@
     "flow": "flow",
     "build": "tsc"
   },
-  "dependencies": {
-    "typescript": "^3.9.7"
-  },
   "devDependencies": {
     "@types/react": "^16.9.46",
+    "@types/react-dom": "^16.9.8",
+    "@types/sass": "^1.16.0",
+    "@types/webpack": "^4.41.21",
+    "css-loader": "^4.2.1",
     "flow-bin": "^0.131.0",
-    "react": "^16.13.1"
+    "node-sass": "^4.14.1",
+    "path": "^0.12.7",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "sass": "^1.26.10",
+    "sass-loader": "^9.0.3",
+    "ts-loader": "^8.0.2",
+    "typescript": "^3.9.7",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
   }
 }
