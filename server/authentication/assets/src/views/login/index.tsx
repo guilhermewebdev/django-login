@@ -5,10 +5,10 @@ import App from './App';
 
 
 Object.assign(document, {
-    main: async () => {
+    main: async (data: any) => {
         render(
             <React.StrictMode>
-                <App />
+                <App {...data} />
             </React.StrictMode>,
             document.getElementById('app')
         )

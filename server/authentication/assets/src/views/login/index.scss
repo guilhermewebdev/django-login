@@ -3,8 +3,13 @@
 .form-header {
     background-color: black;
     height: 15px;
+    color: white;
 }
 
-div {
-    border: 1 solid black;
+#app, html, body {
+    padding: 0px;
+    margin: 0px;
+    height: 100vh;
+    width: 100vw;
+    box-sizing: border-box;
 }

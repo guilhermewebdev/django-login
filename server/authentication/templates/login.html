@@ -8,6 +8,9 @@
 {% block javascript %}
 <script src="{% static 'login/index.js' %}"></script>
 <script>
-    document.main()
+    document.main({
+        siteHeader: '{{ site_header }}',
+        title: '{{ title }}',
+    })
 </script>
 {% endblock %}
