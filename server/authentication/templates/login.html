@@ -1,5 +1,10 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block body %}
 <div id="app"></div>
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'login/index.js' %}"></script>
 {% endblock %}

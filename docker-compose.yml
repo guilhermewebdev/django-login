@@ -6,8 +6,8 @@ services:
         build: ./server/authentication/assets
         restart: always
         volumes:
-            - ./server/authentication/assets:/app
-        command: tsc -w
+            - ./server/authentication/assets:/app:rw
+        command: npx tsc -w
         stdin_open: true
 
     backend:
