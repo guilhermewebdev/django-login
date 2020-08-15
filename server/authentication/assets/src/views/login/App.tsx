@@ -72,7 +72,7 @@ export default (props: any) => {
                         </div>
                         <div className="row">
                             <div className="col-12 my-1 d-flex justify-content-center">
-                                <button type="submit">Login</button>
+                                <button type="submit" className="button bg-blue">Login</button>
                             </div>
                         </div>
                     </form>
