@@ -3,41 +3,28 @@ import * as React from 'react';
 export default (props: any) => {
     const { title, csrfToken } = props;
     return (
-        <div className="container h-100">
-            <div className="row align-items-center h-100">
-                <div className="col-6 mx-auto">
-                    <div className="container-fluid">
+        <div className="container-base">
+            <div className="row h-100">
+                <div className="col-12 col-sm-11 col-md-6 col-lg-4 col-xl-4 h-100 d-flex mx-auto align-items-center">
+                    <form method="post" className="container-fluid">
+                        <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken}/>
                         <div className="row">
-                            <h4 className="text-center col-12">{title}</h4>
+                            <h4 className="col-12 text-center">
+                                {title}
+                            </h4>
                         </div>
                         <div className="row">
-                            <div className="col-6">
-                                <form method='POST' className="container" acceptCharset="utf-8">
-                                    <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken}/>
-                                    <p className="row">
-                                        <input
-                                            className="col-12"
-                                            type="text"
-                                            autoFocus
-                                            placeholder="Username"
-                                            name="username"
-                                        />
-                                    </p>
-                                    <p className="row">
-                                        <input
-                                            className="col-12"
-                                            type="password"
-                                            placeholder="Password"
-                                            name="password"
-                                        />
-                                    </p>
-                                    <p className="row">
-                                        <button className="col-12" type="submit">Log in</button>
-                                    </p>
-                                </form>
+                            <input type="text" placeholder="Username" name="username" className="col-12 my-1"/>
+                        </div>
+                        <div className="row">
+                            <input type="password" name="password" placeholder="Password" className="col-12 my-1"/>
+                        </div>
+                        <div className="row">
+                            <div className="col-12 my-1 d-flex justify-content-center">
+                                <button type="submit">Login</button>
                             </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>

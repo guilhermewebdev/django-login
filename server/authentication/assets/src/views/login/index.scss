@@ -1,9 +1,14 @@
-@import '../../styles/bootstrap.scss';
+@import 'bootstrap';
 
 .form-header {
     background-color: black;
     height: 15px;
     color: white;
+}
+
+.container-base {
+    @extend .container;
+    height: 100vh;
 }
 
 #app, html, body {
