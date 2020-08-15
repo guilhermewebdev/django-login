@@ -1,21 +1,31 @@
 import * as React from 'react';
+import { useForm } from 'react-hook-form';
 
 export default (props: any) => {
-    const { title, csrfToken, formErros } = props;
+    const { title, csrfToken, form } = props;
+    const { register, handleSubmit, errors } = useForm();
+    const [state, setState] = React.useState({
+        username: form?.username?.value
+    })
     return (
         <div className="container-base">
             <div className="row h-100">
                 <div className="col-12 col-sm-11 col-md-6 col-lg-5 col-xl-5 h-100 d-flex mx-auto align-items-center">
-                    <form method="post" autoCorrect="off" className="container-fluid">
+                    <form
+                        method="post"
+                        autoCorrect="off"
+                        onSubmit={handleSubmit((data, e) => e?.target.submit())}
+                        className="container-fluid"
+                    >
                         <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
                         <div className="row">
                             <h4 className="col-12 text-center">
                                 {title}
                             </h4>
                         </div>
-                        {!!formErros?.__all__ &&
+                        {!!form?.erros?.__all__ &&
                             <div className="row">
-                                {formErros.__all__.map((item: any) => (
+                                {form?.erros.__all__.map((item: any) => (
                                     <p className="col-12 text-center">
                                         {item.message}
                                     </p>
@@ -23,16 +33,43 @@ export default (props: any) => {
                             </div>
                         }
                         <div className="row">
-                            <input type="text" placeholder="Username" autoComplete="username" name="username" className="col-12 my-1" />
-                            {formErros?.username?.map((item: any) => (
+                            <input
+                                type="text"
+                                placeholder="Username"
+                                ref={register({
+                                    required: true,
+                                })}
+                                autoFocus
+                                autoComplete="username"
+                                name="username"
+                                onInput={(event) => setState({
+                                    ...state,
+                                    username: event.target?.value,
+                                })}
+                                value={state.username}
+                                className="col-12 my-1"
+                            />
+                            {form?.erros?.username?.map((item: any) => (
                                 <p className="col-12 text-center">{item.message}</p>
                             ))}
+                            {errors.username && (<p className="col-12 text-center">This field is required</p>)}
+                            {form.username.helpText}
                         </div>
                         <div className="row">
-                            <input type="password" name="password" placeholder="Password" autoComplete="password" className="col-12 my-1" />
-                            {formErros?.password?.map((item: any) => (
+                            <input
+                                type="password"
+                                name="password"
+                                ref={register({
+                                    required: true,
+                                })}
+                                placeholder="Password"
+                                autoComplete="password"
+                                className="col-12 my-1"
+                            />
+                            {form?.erros?.password?.map((item: any) => (
                                 <p className="col-12 text-center">{item.message}</p>
                             ))}
+                            {errors.password && (<p className="col-12 text-center">This field is required</p>)}
                         </div>
                         <div className="row">
                             <div className="col-12 my-1 d-flex justify-content-center">
