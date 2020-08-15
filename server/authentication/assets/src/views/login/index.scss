@@ -1,4 +1,5 @@
 @import 'bootstrap';
+$radius: 40px;
 
 .form-header {
     background-color: black;
@@ -17,4 +18,25 @@
     height: 100vh;
     width: 100vw;
     box-sizing: border-box;
+    background-image: cross-fade(10);
+}
+
+.paper {
+    border-radius: $radius;
+    background-color: rgba(0, 0, 0, 0.575);
+    backdrop-filter: blur(5px);
+    color: white;
+}
+
+.input {
+    border-radius: $radius;
+    background-color: rgba(255, 255, 255, 0.356);
+    border: none;
+    cursor: pointer;
+    outline: none;
+}
+.input:hover, .input:active {
+    @extend .input;
+    outline: none;
+    box-shadow: 1px 1px 10px rgba(255, 255, 255, 0.356);
 }

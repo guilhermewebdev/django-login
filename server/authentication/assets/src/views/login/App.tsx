@@ -15,7 +15,7 @@ export default (props: any) => {
                         method="post"
                         autoCorrect="off"
                         onSubmit={handleSubmit((data, e) => e?.target.submit())}
-                        className="container-fluid"
+                        className="container-fluid paper p-5"
                     >
                         <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
                         <div className="row">
@@ -47,13 +47,12 @@ export default (props: any) => {
                                     username: event.target?.value,
                                 })}
                                 value={state.username}
-                                className="col-12 my-1"
+                                className="col-12 my-1 input"
                             />
                             {form?.erros?.username?.map((item: any) => (
                                 <p className="col-12 text-center">{item.message}</p>
                             ))}
                             {errors.username && (<p className="col-12 text-center">This field is required</p>)}
-                            {form.username.helpText}
                         </div>
                         <div className="row">
                             <input
@@ -64,7 +63,7 @@ export default (props: any) => {
                                 })}
                                 placeholder="Password"
                                 autoComplete="password"
-                                className="col-12 my-1"
+                                className="col-12 my-1 input"
                             />
                             {form?.erros?.password?.map((item: any) => (
                                 <p className="col-12 text-center">{item.message}</p>
