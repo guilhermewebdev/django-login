@@ -23,17 +23,33 @@ $radius: 40px;
 
 .paper {
     border-radius: $radius;
-    background-color: rgba(0, 0, 0, 0.575);
+    background-color: rgba(255, 255, 255, 0.356);
     backdrop-filter: blur(5px);
     color: white;
 }
 
 .input {
     border-radius: $radius;
-    background-color: rgba(255, 255, 255, 0.356);
+    background-color: rgba(0, 0, 0, 0.575);
     border: none;
     cursor: pointer;
     outline: none;
+    color: white;
+    text-align: center;
+
+    
+}
+.input::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color: white;
+    opacity: 1; /* Firefox */
+}
+
+.input:-ms-input-placeholder { /* Internet Explorer 10-11 */
+    color: white;
+}
+
+.input::-ms-input-placeholder { /* Microsoft Edge */
+    color: white;
 }
 .input:hover, .input:active {
     @extend .input;
