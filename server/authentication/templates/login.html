@@ -7,11 +7,14 @@
 
 {% block javascript %}
 <script src="{% static 'login/index.js' %}"></script>
+{% autoescape off %}
 <script>
     document.main({
         siteHeader: '{{ site_header }}',
         title: '{{ title }}',
-        csrfToken: '{{ csrf_token }}'
+        csrfToken: '{{ csrf_token }}',
+        formErros: {{ form.errors.as_json }},
     })
 </script>
+{% endautoescape %}
 {% endblock %}
