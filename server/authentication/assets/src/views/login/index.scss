@@ -21,6 +21,12 @@ $radius: 40px;
     background-color: black;
 }
 
+.background {
+    position: fixed;
+    overflow: hidden;
+    z-index: 1;
+}
+
 .paper {
     border-radius: $radius;
     background-color: rgba(255, 255, 255, 0.356);
