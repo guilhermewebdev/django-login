@@ -44,7 +44,7 @@ export default (props: any) => {
                                 name="username"
                                 onInput={(event) => setState({
                                     ...state,
-                                    username: event.target?.value,
+                                    username: event.data,
                                 })}
                                 value={state.username}
                                 className="col-12 my-1 input"

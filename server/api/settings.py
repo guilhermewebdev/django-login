@@ -32,6 +32,9 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+SESSION_COOKIE_NAME = 'se'
+CSRF_COOKIE_NAME = 'cs'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',

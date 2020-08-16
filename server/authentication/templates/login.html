@@ -6,9 +6,9 @@
 {% endblock %}
 
 {% block javascript %}
-<script src="{% static 'login/index.js' %}"></script>
+<script type="application/javascript" src="{% static 'login/index.js' %}"></script>
 {% autoescape off %}
-<script>
+<script type="application/javascript">
     document.main({
         siteHeader: '{{ site_header }}',
         title: '{{ title }}',
