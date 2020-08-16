@@ -14,7 +14,14 @@ export default () => {
     React.useEffect(() => {
         if(canvasRef.current){
             const canvas: HTMLCanvasElement = canvasRef.current;
-            const context = canvas.getContext('2d');
+            const ctx = canvas.getContext('2d');
+            const grd = ctx?.createLinearGradient(0, 0, size.width, 0);
+            grd?.addColorStop(0, "red");
+            grd?.addColorStop(0.5, "white");
+            ctx?.fillStyle = grd;
+            Object.assign(ctx, {
+                fillStyle: grd
+            })
 
         }
     });

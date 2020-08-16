@@ -13,7 +13,7 @@ export default (props: any) => {
             <Background />
             <div className="container-base">
                 <div className="row h-100">
-                    <div className="col-12 col-sm-11 col-md-6 col-lg-5 col-xl-5 h-100 d-flex mx-auto align-items-center">
+                    <div className="col-12 col-sm-11 col-md-7 col-lg-5 col-xl-4 h-100 d-flex mx-auto align-items-center">
                         <form
                             method="post"
                             autoCorrect="off"

@@ -24,13 +24,16 @@ $radius: 40px;
 .background {
     position: fixed;
     overflow: hidden;
-    z-index: 1;
+    z-index: 0;
+    background-color: black;
+    background-size: cover;
+    background-position: center center;
 }
 
 .paper {
     border-radius: $radius;
-    background-color: rgba(255, 255, 255, 0.356);
-    backdrop-filter: blur(5px);
+    background-color: rgba(95, 95, 95, 0.5);
+    backdrop-filter: blur(10px);
     color: white;
 }
 
