@@ -12,18 +12,28 @@ export default () => {
     }
     // Draw in canvas
     React.useEffect(() => {
-        if(canvasRef.current){
-            const canvas: HTMLCanvasElement = canvasRef.current;
-            const ctx = canvas.getContext('2d');
-            const grd = ctx?.createLinearGradient(0, 0, size.width, 0);
-            grd?.addColorStop(0, "red");
-            grd?.addColorStop(0.5, "white");
-            ctx?.fillStyle = grd;
-            Object.assign(ctx, {
-                fillStyle: grd
-            })
+        const canvas: HTMLCanvasElement | null = canvasRef.current;
+        const ctx = canvas?.getContext('2d');
+        const grd = ctx?.createLinearGradient(0, 0, size.width, size.height);
+        const render = () => {
+                ctx?.clearRect(0, 0, size.width, size.height);
+                ctx?.beginPath();
+            if (canvasRef.current) {
+                grd?.addColorStop(0, "red");
+                grd?.addColorStop(0.5, "transparent");
+                grd?.addColorStop(1, "black");
 
+                // Fill with gradient
+                Object.assign(ctx, {
+                    fillStyle: grd
+                })
+                ctx?.fillRect(0, 0, size.width, size.height);
+
+            }
+            return requestAnimationFrame(render);
         }
+        const requestId = render();
+        return () => (cancelAnimationFrame(requestId));
     });
     // Keep max screen size
     React.useLayoutEffect(() => {
