@@ -10,6 +10,10 @@ export default (props: any) => {
     const updateSize = () => {
         setSize(sizeFactory())
     }
+    const [mouse, setMouse] = React.useState({
+        x: 0,
+        y: 0,
+    })
     type Point = {
         x: number,
         y: number,
@@ -39,7 +43,7 @@ export default (props: any) => {
         }
     }
     const colors = ['#F25CA2', '#0433BF', '#032CA6', '#021859', '#0B9ED9', ...new Array(7).fill('black')]
-    let curves = new Array(70)
+    let curves = new Array(20)
         .fill({})
         .map(() => ({
             start: randomXY(true),
@@ -49,33 +53,23 @@ export default (props: any) => {
             speed: Math.floor(Math.random() * 5) + 1,
             colors: new Array(3).fill('').map(() => (colors[Math.floor(Math.random() * (colors.length)) - 0]))
         }))
-    const move = (value: number, speed: number, direction: 0 | 1, reference: number, out: boolean, setDirection: (direction: 1 | 0) => void) => {
-        if(out) {
-            if (value <= -300) {
-                setDirection(1);
-                return value + speed;
-            }
-            if (value >= reference + 300) {
-                setDirection(0)
-                return value - speed;
-            }
-        }else{
-            if (value <= 0) {
-                setDirection(1);
-                return value + speed * 2;
-            }
-            if (value >= reference) {
-                setDirection(0)
-                return value - speed * 2;
-            }
+    const move = (value: number, speed: number, direction: 0 | 1, reference: number, client: number, setDirection: (direction: 1 | 0) => void) => {
+        if (value <= -500) {
+            setDirection(1);
+            return value + speed;
         }
+        if (value >= reference + 500) {
+            setDirection(0)
+            return value - speed;
+        }
+
         return direction === 1 ? value + speed : value - speed;
     }
-    const getNewPosition = ({ x, y, xDirection, yDirection }: Point, speed: number, out: boolean = false): Point => ({
-        x: move(x, speed, xDirection, size.width, out, (direction: 0 | 1) => {
+    const getNewPosition = ({ x, y, xDirection, yDirection }: Point, speed: number): Point => ({
+        x: move(x, speed, xDirection, size.width, mouse.x, (direction: 0 | 1) => {
             xDirection = direction;
         }),
-        y: move(y, speed, yDirection, size.height, out, (direction: 0 | 1) => {
+        y: move(y, speed, yDirection, size.height, mouse.y, (direction: 0 | 1) => {
             yDirection = direction;
         }),
         xDirection,
@@ -92,24 +86,29 @@ export default (props: any) => {
                 fillStyle: grd,
                 strokeStyle: grd,
                 lineWidth: size,
-                shadowBlur: 100,
-                shadowColo: 'black',
             })
             grd.addColorStop(0, colors[0])
             grd.addColorStop(0.5, colors[1])
             grd.addColorStop(1, colors[2])
             ctx?.moveTo(start.x, start.y);
             ctx?.quadraticCurveTo(control.x, control.y, end.x, end.y);
+            ctx?.stroke()
             ctx?.fill()
             ctx.closePath()
             return {
                 size,
-                start: getNewPosition(start, speed, true),
+                start: getNewPosition(start, speed),
                 control: getNewPosition(control, speed),
-                end: getNewPosition(end, speed, true),
+                end: getNewPosition(end, speed),
                 speed,
                 colors,
             }
+        })
+    }
+    const updateMousePosition = (event: MouseEvent) => {
+        setMouse({
+            x: event.clientX,
+            y: event.clientY,
         })
     }
     const canvas: HTMLCanvasElement | null = canvasRef.current;
@@ -137,6 +136,10 @@ export default (props: any) => {
         updateSize()
         return () => window.removeEventListener('resize', updateSize);
     }, [window.innerHeight, window.innerWidth])
+    React.useLayoutEffect(() => {
+        window.addEventListener('mousemove', updateMousePosition)
+        return () => window.removeEventListener('mousemove', updateMousePosition)
+    }, [mouse])
     return (
         <canvas
             ref={canvasRef}
