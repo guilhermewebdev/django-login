@@ -10,7 +10,6 @@ export default (props: any) => {
     const updateSize = () => {
         setSize(sizeFactory())
     }
-    // Draw in canvas
     type Point = {
         x: number,
         y: number,
@@ -46,26 +45,37 @@ export default (props: any) => {
             start: randomXY(true),
             control: randomXY(),
             end: randomXY(true),
-            size: Math.floor(Math.random() * 30),
-            speed: Math.floor(Math.random() * 10) + 1,
+            size: Math.floor(Math.random() * 30) + 5,
+            speed: Math.floor(Math.random() * 5) + 1,
             colors: new Array(3).fill('').map(() => (colors[Math.floor(Math.random() * (colors.length)) - 0]))
         }))
-    const move = (value: number, speed: number, direction: 0 | 1, reference: number, setDirection: (direction: 1 | 0) => void) => {
-        if (value === 0) {
-            setDirection(1);
-            return value - speed;
-        }
-        if (value === reference) {
-            setDirection(0)
-            return value + speed;
+    const move = (value: number, speed: number, direction: 0 | 1, reference: number, out: boolean, setDirection: (direction: 1 | 0) => void) => {
+        if(out) {
+            if (value <= -300) {
+                setDirection(1);
+                return value + speed;
+            }
+            if (value >= reference + 300) {
+                setDirection(0)
+                return value - speed;
+            }
+        }else{
+            if (value <= 0) {
+                setDirection(1);
+                return value + speed * 2;
+            }
+            if (value >= reference) {
+                setDirection(0)
+                return value - speed * 2;
+            }
         }
         return direction === 1 ? value + speed : value - speed;
     }
-    const getNewPosition = ({ x, y, xDirection, yDirection }: Point, speed: number): Point => ({
-        x: move(x, speed, xDirection, size.width, (direction: 0 | 1) => {
+    const getNewPosition = ({ x, y, xDirection, yDirection }: Point, speed: number, out: boolean = false): Point => ({
+        x: move(x, speed, xDirection, size.width, out, (direction: 0 | 1) => {
             xDirection = direction;
         }),
-        y: move(y, speed, yDirection, size.height, (direction: 0 | 1) => {
+        y: move(y, speed, yDirection, size.height, out, (direction: 0 | 1) => {
             yDirection = direction;
         }),
         xDirection,
@@ -75,7 +85,8 @@ export default (props: any) => {
         ctx.restore()
         return cvs.map(({ start, control, end, size, speed, colors }) => {
             const grd = ctx?.createLinearGradient(start.x, start.y, end.x, end.y);
-            ctx.clearRect(0, 0, size.width, size.height);
+            ctx.fillRect(0, 0, size.width, size.height);
+            ctx.restore();
             ctx?.beginPath()
             Object.assign(ctx, {
                 fillStyle: grd,
@@ -89,13 +100,13 @@ export default (props: any) => {
             grd.addColorStop(1, colors[2])
             ctx?.moveTo(start.x, start.y);
             ctx?.quadraticCurveTo(control.x, control.y, end.x, end.y);
-            ctx?.stroke()
+            ctx?.fill()
             ctx.closePath()
             return {
                 size,
-                start: getNewPosition(start, speed),
+                start: getNewPosition(start, speed, true),
                 control: getNewPosition(control, speed),
-                end: getNewPosition(end, speed),
+                end: getNewPosition(end, speed, true),
                 speed,
                 colors,
             }
@@ -115,14 +126,11 @@ export default (props: any) => {
             render()
             ctx.save()
             return () => {
-                ctx.restore();
-                ctx?.beginPath();
                 cancelAnimationFrame(animationId)
-                ctx.closePath()
                 ctx.clearRect(0, 0, size.width, size.height);
             }
         }
-    }, [...curves]);
+    }, [ctx, size]);
     // Keep max screen size
     React.useLayoutEffect(() => {
         window.addEventListener('resize', updateSize)
