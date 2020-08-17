@@ -39,16 +39,18 @@ export default (props: any) => {
             yDirection: line.x === 0 ? 1 : line.y === size.height ? 0 : Math.floor(Math.random() * 1) + 0 as 0 | 1,
         }
     }
-    let curves = new Array(300)
+    const colors = ['#F25CA2', '#0433BF', '#032CA6', '#021859', '#0B9ED9', ...new Array(7).fill('black')]
+    let curves = new Array(70)
         .fill({})
         .map(() => ({
             start: randomXY(true),
             control: randomXY(),
             end: randomXY(true),
             size: Math.floor(Math.random() * 30),
-            speed: Math.floor(Math.random() * 100) + 100,
+            speed: Math.floor(Math.random() * 10) + 1,
+            colors: new Array(3).fill('').map(() => (colors[Math.floor(Math.random() * (colors.length)) - 0]))
         }))
-    const move = (value: number, speed: number, direction: 0 | 1, reference: number, setDirection: any) => {
+    const move = (value: number, speed: number, direction: 0 | 1, reference: number, setDirection: (direction: 1 | 0) => void) => {
         if (value === 0) {
             setDirection(1);
             return value - speed;
@@ -59,38 +61,43 @@ export default (props: any) => {
         }
         return direction === 1 ? value + speed : value - speed;
     }
-    const getNewPosition = (values: any, speed: number): Point => ({
-        x: move(values.x, speed, values.xDirection, size.width, (direction: 0 | 1) => {
-            values.xDirection = direction;
+    const getNewPosition = ({ x, y, xDirection, yDirection }: Point, speed: number): Point => ({
+        x: move(x, speed, xDirection, size.width, (direction: 0 | 1) => {
+            xDirection = direction;
         }),
-        y: move(values.y, speed, values.yDirection, size.height, (direction: 0 | 1) => {
-            values.yDirection = direction;
+        y: move(y, speed, yDirection, size.height, (direction: 0 | 1) => {
+            yDirection = direction;
         }),
-        ...values,
+        xDirection,
+        yDirection,
     })
-    const colors = ['green', 'cyan', 'yellow', 'red', 'purple', 'magenta', ...new Array(14).fill('black')]
-    const draw = (ctx: any) => {
+    const draw = (ctx: any, cvs: Array<any>) => {
         ctx.restore()
-        return curves.map(({ start, control, end, size, speed }) => {
+        return cvs.map(({ start, control, end, size, speed, colors }) => {
             const grd = ctx?.createLinearGradient(start.x, start.y, end.x, end.y);
-            grd?.addColorStop(0, colors[Math.floor(Math.random() * (colors.length)) - 0]);
-            grd?.addColorStop(0.5, colors[Math.floor(Math.random() * (colors.length)) - 0]);
-            grd?.addColorStop(1, colors[Math.floor(Math.random() * (colors.length)) - 0]);
+            ctx.clearRect(0, 0, size.width, size.height);
             ctx?.beginPath()
-            ctx?.moveTo(start.x, start.y);
-            ctx?.quadraticCurveTo(control.x, control.y, end.x, end.y);
             Object.assign(ctx, {
                 fillStyle: grd,
                 strokeStyle: grd,
                 lineWidth: size,
+                shadowBlur: 100,
+                shadowColo: 'black',
             })
-            ctx?.stroke();
+            grd.addColorStop(0, colors[0])
+            grd.addColorStop(0.5, colors[1])
+            grd.addColorStop(1, colors[2])
+            ctx?.moveTo(start.x, start.y);
+            ctx?.quadraticCurveTo(control.x, control.y, end.x, end.y);
+            ctx?.stroke()
+            ctx.closePath()
             return {
                 size,
                 start: getNewPosition(start, speed),
                 control: getNewPosition(control, speed),
                 end: getNewPosition(end, speed),
                 speed,
+                colors,
             }
         })
     }
@@ -98,19 +105,30 @@ export default (props: any) => {
     const ctx = canvas?.getContext('2d');
     React.useEffect(() => {
         if (ctx) {
-            curves = draw(ctx)
+            ctx.clearRect(0, 0, size.width, size.height);
+            let cvs = curves;
+            let animationId: any;
+            const render = () => {
+                cvs = draw(ctx, cvs);
+                animationId = requestAnimationFrame(render)
+            }
+            render()
+            ctx.save()
             return () => {
-                ctx.restore()
+                ctx.restore();
+                ctx?.beginPath();
+                cancelAnimationFrame(animationId)
+                ctx.closePath()
+                ctx.clearRect(0, 0, size.width, size.height);
             }
         }
-    }, [curves, ctx]);
+    }, [...curves]);
     // Keep max screen size
     React.useLayoutEffect(() => {
         window.addEventListener('resize', updateSize)
         updateSize()
         return () => window.removeEventListener('resize', updateSize);
     }, [window.innerHeight, window.innerWidth])
-
     return (
         <canvas
             ref={canvasRef}
