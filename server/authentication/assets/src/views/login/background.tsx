@@ -9,25 +9,25 @@ type Point = {
     ySpeed: number,
 }
 
-const move = (value: number, speed: number, direction: 0 | 1, reference: number, setDirection: (direction: 1 | 0) => void) => {
+const move = (value: number, speed: number, direction: 0 | 1, reference: number, client: number, setDirection: (direction: 1 | 0) => void) => {
     if (value <= -500) {
         setDirection(1);
-        return value + speed;
+        return client - value < 30 ? value : value + speed;
     }
     if (value >= reference + 500) {
         setDirection(0)
-        return value - speed;
+        return value - client < 30 ? value : value - speed;
     }
 
     return direction === 1 ? value + speed : value - speed;
 }
 
-const getNewPosition = ({ x, y, xDirection, yDirection, xSpeed, ySpeed }: Point): Point => {
+const getNewPosition = ({ x, y, xDirection, yDirection, xSpeed, ySpeed }: Point, mouse: any): Point => {
     return {
-        x: move(x, xSpeed, xDirection, window.innerWidth, (direction: 0 | 1) => {
+        x: move(x, xSpeed, xDirection, window.innerWidth, mouse.x, (direction: 0 | 1) => {
             xDirection = direction;
         }),
-        y: move(y, ySpeed, yDirection, window.innerHeight, (direction: 0 | 1) => {
+        y: move(y, ySpeed, yDirection, window.innerHeight, mouse.y, (direction: 0 | 1) => {
             yDirection = direction;
         }),
         xDirection,
@@ -68,7 +68,7 @@ const randomXY = (out?: boolean): Point => {
     }
 }
 
-const draw = (ctx: any, cvs: Array<any>) => {
+const draw = (ctx: any, cvs: Array<any>, mouse: any) => {
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
     return cvs.map(({ start, control, end, size, speed, colors }) => {
         const grd = ctx?.createLinearGradient(start.x, start.y, end.x, end.y);
@@ -85,12 +85,11 @@ const draw = (ctx: any, cvs: Array<any>) => {
         ctx?.moveTo(start.x, start.y);
         ctx?.quadraticCurveTo(control.x, control.y, end.x, end.y);
         ctx?.stroke()
-        ctx.closePath()
         return {
             size,
-            start: getNewPosition(start),
-            control: getNewPosition(control),
-            end: getNewPosition(end),
+            start: getNewPosition(start, mouse),
+            control: getNewPosition(control, mouse),
+            end: getNewPosition(end, mouse),
             speed,
             colors,
         }
@@ -102,8 +101,12 @@ export default (props: any) => {
     const canvas: HTMLCanvasElement | null = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     const [size, setSize] = React.useState(sizeFactory());
+    const [mouse, setMouse] = React.useState({
+        x: 0,
+        y: 0,
+    })
     const colors = ['#F25CA2', '#0433BF', '#032CA6', '#021859', '#0B9ED9', ...new Array(7).fill('black')]
-    const curves = new Array(20)
+    const [curves, setCurves] = React.useState(new Array(20)
         .fill({})
         .map(() => ({
             start: randomXY(true),
@@ -112,35 +115,47 @@ export default (props: any) => {
             size: Math.floor(Math.random() * 30) + 5,
             colors: new Array(3).fill('').map(() => (colors[Math.floor(Math.random() * (colors.length)) - 0]))
         }))
-
+    )
     const updateSize = () => {
         setSize(sizeFactory())
     }
-    
+
+    let newCvs: any;
     React.useEffect(() => {
         if (ctx) {
             let animationId: any;
             const render = (cvs: any) => {
+                newCvs = draw(ctx, cvs, mouse);
                 animationId = requestAnimationFrame(() => {
-                    render(draw(ctx, cvs))
+                    render(newCvs);
                 })
+                return newCvs;
             }
-            render(curves);
-
+            setCurves(render(curves))
             return () => {
+                setCurves(newCvs)
                 cancelAnimationFrame(animationId)
                 ctx.clearRect(0, 0, size.width, size.height);
                 ctx.restore()
             }
         }
-    }, [ctx, size]);
+    }, [ctx, size, mouse]);
     // Keep max screen size
     React.useLayoutEffect(() => {
         window.addEventListener('resize', updateSize)
         updateSize()
         return () => window.removeEventListener('resize', updateSize);
     }, [window.innerHeight, window.innerWidth])
-
+    const setPositionMouse = (event: MouseEvent) => {
+        setMouse({
+            x: event.clientX,
+            y: event.clientY,
+        })
+    }
+    React.useLayoutEffect(() => {
+        window.addEventListener('mousemove', setPositionMouse)
+        return () => window.removeEventListener('mousemove', setPositionMouse)
+    })
     return (
         <canvas
             ref={canvasRef}
