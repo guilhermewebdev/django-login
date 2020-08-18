@@ -3,31 +3,31 @@ import * as React from 'react';
 type Point = {
     x: number,
     y: number,
-    xDirection: 0 | 1,
-    yDirection: 0 | 1,
+    xDirection: boolean,
+    yDirection: boolean,
     xSpeed: number,
     ySpeed: number,
 }
 
-const move = (value: number, speed: number, direction: 0 | 1, reference: number, client: number, setDirection: (direction: 1 | 0) => void) => {
+const move = (value: number, speed: number, direction: boolean, reference: number, client: number, setDirection: (direction: boolean) => void) => {
     if (value <= -500) {
-        setDirection(1);
+        setDirection(true);
         return client - value < 30 ? value : value + speed;
     }
     if (value >= reference + 500) {
-        setDirection(0)
+        setDirection(false)
         return value - client < 30 ? value : value - speed;
     }
 
-    return direction === 1 ? value + speed : value - speed;
+    return direction ? value + speed : value - speed;
 }
 
 const getNewPosition = ({ x, y, xDirection, yDirection, xSpeed, ySpeed }: Point, mouse: any): Point => {
     return {
-        x: move(x, xSpeed, xDirection, window.innerWidth, mouse.x, (direction: 0 | 1) => {
+        x: move(x, xSpeed, xDirection, window.innerWidth, mouse.x, (direction: boolean) => {
             xDirection = direction;
         }),
-        y: move(y, ySpeed, yDirection, window.innerHeight, mouse.y, (direction: 0 | 1) => {
+        y: move(y, ySpeed, yDirection, window.innerHeight, mouse.y, (direction: boolean) => {
             yDirection = direction;
         }),
         xDirection,
@@ -56,15 +56,15 @@ const randomXY = (out?: boolean): Point => {
         outs[Math.floor(Math.random() * outs.length) + 0] = true;
     }
     const line = {
-        x: outs[0] ? randomOut(window.innerWidth) : Math.floor(Math.random() * window.innerWidth),
-        y: outs[1] ? randomOut(window.innerHeight) : Math.floor(Math.random() * window.innerHeight),
+        x: out ? randomOut(window.innerWidth) : Math.floor(Math.random() * window.innerWidth),
+        y: out ? randomOut(window.innerHeight) : Math.floor(Math.random() * window.innerHeight),
     }
     return {
         ...line,
-        xDirection: line.x === 0 ? 1 : line.x === window.innerWidth ? 0 : Math.floor(Math.random() * 1) + 0 as 0 | 1,
-        yDirection: line.x === 0 ? 1 : line.y === window.innerHeight ? 0 : Math.floor(Math.random() * 1) + 0 as 0 | 1,
-        xSpeed: Math.floor(Math.random() * 10) + 1,
-        ySpeed: Math.floor(Math.random() * 10) + 1,
+        xDirection: Math.floor(Math.random() * 10) > 4,
+        yDirection: Math.floor(Math.random() * 10) > 4,
+        xSpeed: Math.floor(Math.random() * 2),
+        ySpeed: Math.floor(Math.random() * 2),
     }
 }
 
@@ -79,9 +79,11 @@ const draw = (ctx: any, cvs: Array<any>, mouse: any) => {
             strokeStyle: grd,
             lineWidth: size,
         })
-        grd.addColorStop(0, colors[0])
+        grd.addColorStop(0, 'black')
+        grd.addColorStop(0.3, colors[0])
         grd.addColorStop(0.5, colors[1])
-        grd.addColorStop(1, colors[2])
+        grd.addColorStop(0.7, colors[2])
+        grd.addColorStop(1, 'black')
         ctx?.moveTo(start.x, start.y);
         ctx?.quadraticCurveTo(control.x, control.y, end.x, end.y);
         ctx?.stroke()
@@ -105,7 +107,7 @@ export default (props: any) => {
         x: 0,
         y: 0,
     })
-    const colors = ['#F25CA2', '#0433BF', '#032CA6', '#021859', '#0B9ED9', ...new Array(7).fill('black')]
+    const colors = ['#F25CA2', '#0433BF', '#032CA6', '#021859', '#0B9ED9', 'black', 'black']
     const [curves, setCurves] = React.useState(new Array(20)
         .fill({})
         .map(() => ({
@@ -139,7 +141,7 @@ export default (props: any) => {
                 ctx.restore()
             }
         }
-    }, [ctx, size, mouse]);
+    }, [ctx, size]);
     // Keep max screen size
     React.useLayoutEffect(() => {
         window.addEventListener('resize', updateSize)
@@ -155,7 +157,7 @@ export default (props: any) => {
     React.useLayoutEffect(() => {
         window.addEventListener('mousemove', setPositionMouse)
         return () => window.removeEventListener('mousemove', setPositionMouse)
-    })
+    }, [mouse])
     return (
         <canvas
             ref={canvasRef}
