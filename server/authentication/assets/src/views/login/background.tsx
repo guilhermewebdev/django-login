@@ -12,11 +12,11 @@ type Point = {
 const move = (value: number, speed: number, direction: boolean, reference: number, client: number, setDirection: (direction: boolean) => void) => {
     if (value <= -500) {
         setDirection(true);
-        return client - value < 30 ? value : value + speed;
+        return value + speed;
     }
     if (value >= reference + 500) {
         setDirection(false)
-        return value - client < 30 ? value : value - speed;
+        return value - speed;
     }
 
     return direction ? value + speed : value - speed;
@@ -98,6 +98,14 @@ const draw = (ctx: any, cvs: Array<any>, mouse: any) => {
     })
 }
 
+const render = (context: any, cvs: any, mouse: any) => {
+    const newCvs = draw(context, cvs, mouse);
+    const animationId = requestAnimationFrame(() => {
+        render(context, newCvs, mouse);
+    })
+    return { newCvs, animationId, context, mouse };
+}
+
 export default (props: any) => {
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
     const canvas: HTMLCanvasElement | null = canvasRef.current;
@@ -122,23 +130,15 @@ export default (props: any) => {
         setSize(sizeFactory())
     }
 
-    let newCvs: any;
     React.useEffect(() => {
         if (ctx) {
-            let animationId: any;
-            const render = (cvs: any) => {
-                newCvs = draw(ctx, cvs, mouse);
-                animationId = requestAnimationFrame(() => {
-                    render(newCvs);
-                })
-                return newCvs;
-            }
-            setCurves(render(curves))
+            
+            const { newCvs, animationId, context } = render(ctx, curves, mouse)
+            setCurves(newCvs)
             return () => {
-                setCurves(newCvs)
                 cancelAnimationFrame(animationId)
-                ctx.clearRect(0, 0, size.width, size.height);
-                ctx.restore()
+                context.clearRect(0, 0, size.width, size.height);
+                context.restore()
             }
         }
     }, [ctx, size]);
