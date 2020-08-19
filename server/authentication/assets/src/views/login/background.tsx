@@ -71,7 +71,6 @@ const randomXY = (out?: boolean): Point => {
 
 const draw = (ctx: any, cvs: Array<any>, mouse: any) => {
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    console.log(mouse)
     return cvs.map(({ start, control, end, size, speed, colors }) => {
         const grd = ctx?.createLinearGradient(start.x, start.y, end.x, end.y);
         ctx.restore();
@@ -109,7 +108,7 @@ export default (props: any) => {
     const [size, setSize] = React.useState(sizeFactory());
     const mouse = useMouseMove()
     const colors = ['#F25CA2', '#0433BF', '#032CA6', '#021859', '#0B9ED9', 'black', 'black']
-    const [curves, setCurves] = React.useState(new Array(20)
+    const curves = new Array(20)
         .fill({})
         .map(() => ({
             start: randomXY(true),
@@ -118,7 +117,6 @@ export default (props: any) => {
             size: Math.floor(Math.random() * 30) + 5,
             colors: new Array(3).fill('').map(() => (colors[Math.floor(Math.random() * (colors.length)) - 0]))
         }))
-    )
     const updateSize = () => {
         setSize(sizeFactory())
     }
