@@ -1,4 +1,5 @@
 import * as React from 'react';
+import useMouseMove from './mouseHook';
 
 type Point = {
     x: number,
@@ -70,6 +71,7 @@ const randomXY = (out?: boolean): Point => {
 
 const draw = (ctx: any, cvs: Array<any>, mouse: any) => {
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    console.log(mouse)
     return cvs.map(({ start, control, end, size, speed, colors }) => {
         const grd = ctx?.createLinearGradient(start.x, start.y, end.x, end.y);
         ctx.restore();
@@ -98,23 +100,14 @@ const draw = (ctx: any, cvs: Array<any>, mouse: any) => {
     })
 }
 
-const render = (context: any, cvs: any, mouse: any) => {
-    const newCvs = draw(context, cvs, mouse);
-    const animationId = requestAnimationFrame(() => {
-        render(context, newCvs, mouse);
-    })
-    return { newCvs, animationId, context, mouse };
-}
+
 
 export default (props: any) => {
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
     const canvas: HTMLCanvasElement | null = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     const [size, setSize] = React.useState(sizeFactory());
-    const [mouse, setMouse] = React.useState({
-        x: 0,
-        y: 0,
-    })
+    const mouse = useMouseMove()
     const colors = ['#F25CA2', '#0433BF', '#032CA6', '#021859', '#0B9ED9', 'black', 'black']
     const [curves, setCurves] = React.useState(new Array(20)
         .fill({})
@@ -130,34 +123,31 @@ export default (props: any) => {
         setSize(sizeFactory())
     }
 
+    const render = (context: any, cvs: any) => {
+        const newCvs = draw(context, cvs, mouse.current);
+        const animationId = requestAnimationFrame(() => {
+            render(context, newCvs);
+        })
+        return { newCvs, animationId, context, mouse };
+    }
+
     React.useEffect(() => {
         if (ctx) {
-            
-            const { newCvs, animationId, context } = render(ctx, curves, mouse)
-            setCurves(newCvs)
+            const { animationId, context } = render(ctx, curves);
             return () => {
-                cancelAnimationFrame(animationId)
+                cancelAnimationFrame(animationId);
                 context.clearRect(0, 0, size.width, size.height);
-                context.restore()
+                context.restore();
             }
         }
-    }, [ctx, size]);
+    }, [ctx]);
     // Keep max screen size
     React.useLayoutEffect(() => {
         window.addEventListener('resize', updateSize)
         updateSize()
         return () => window.removeEventListener('resize', updateSize);
-    }, [window.innerHeight, window.innerWidth])
-    const setPositionMouse = (event: MouseEvent) => {
-        setMouse({
-            x: event.clientX,
-            y: event.clientY,
-        })
-    }
-    React.useLayoutEffect(() => {
-        window.addEventListener('mousemove', setPositionMouse)
-        return () => window.removeEventListener('mousemove', setPositionMouse)
-    }, [mouse])
+    }, [])
+
     return (
         <canvas
             ref={canvasRef}
