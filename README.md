@@ -12,7 +12,7 @@ After install the requirements, you need clone this repository. You Can download
     git clone https://github.com/guilhermewebdev/django-login.git
 ```
 
-Whit the project in your machine, you need create a .env file whit database credentials, this file need be created into directory \<Project Path\>/server/api/, it's have the sensitive infos about project, how database credentials and secret key in this format:
+Whit the project in your machine, you need create a .env file whit database credentials, this file need be created into directory \<Project Path\>/server/api/, in there you can find sensitive data about the project, such as the database credentials and secret key in this format:
 
 /\<Project Path\>/server/api/.env
 ```
@@ -23,7 +23,7 @@ Whit the project in your machine, you need create a .env file whit database cred
     SECRET_KEY=<Django secret key>
 ```
 
-Read more about Django Secret Key [here](https://docs.djangoproject.com/en/2.2/ref/settings/#std:setting-SECRET_KEY). The database credentials is configured into docker-compose.yml file, the default is:
+Read more about Django Secret Key [here](https://docs.djangoproject.com/en/2.2/ref/settings/#std:setting-SECRET_KEY). The database credentials are configured into docker-compose.yml file, the default is:
 
 ```
     DB=database
