@@ -14,7 +14,7 @@ services:
         build: ./server
         restart: always
         volumes: 
-            - ./server:/home/app/share
+            - ./server:/home/app/.share/:z
         command: pypy3 manage.py runserver 0.0.0.0:8000
         environment: 
             PYTHONUNBUFFERED: 1

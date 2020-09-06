@@ -1,17 +1,19 @@
 FROM pypy:3
 
 RUN pip install --upgrade pip; \
-    useradd -rUm -u 999 app; 
+    useradd -Um app; \
+    mkdir /home/app/.share; 
 
-WORKDIR /home/app/share
+COPY . /home/app/.share/
 
-COPY . .
-
-RUN chown -R app:app /home/app/share; \
-    chmod -R 755 /home/app/share
-
-ENV PATH /home/app/.local/bin:$PATH
+RUN chmod -R 540 /home/app/.share/; \
+    chown -R app:app /home/app/.share/; 
 
 USER app
+
+WORKDIR /home/app/.share
+
+
+ENV PATH /home/app/.local/bin:$PATH
 
 RUN pip install -r requirements.txt --user;
