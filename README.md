@@ -1,5 +1,5 @@
 # Django Login
-This project objective is to show a login example using Django and React.
+This project goal is to show a login example using Django and React.
 
 ## How to setup in development mode:
 Requirements:  
