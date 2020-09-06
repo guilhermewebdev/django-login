@@ -42,7 +42,7 @@ After build successful migrate the database running this command:
 ```
     docker-compose exec backend pypy3 manage.py migrate
 ```
-Now, the project ir already to run, you can make it running:
+Now, the project ir ready to run, you can make it running:
 
 ```
     docker-compose up
