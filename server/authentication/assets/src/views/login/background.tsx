@@ -21,6 +21,7 @@ const MIN_CURVE_SIZE = 1
 const getRandomValue = (max: number, min?: number) => Math.floor(Math.random() * max) + (!!min ? min : 0)
 const getRandomColor = () => COLORS[getRandomValue(COLORS.length, 0)]
 const getCoursePoint = (direction: boolean, speed: number): number => direction ? + speed : - speed;
+const getRandomBoolean = () => Math.random() >= 0.5
 
 const move = (value: number, speed: number, direction: boolean, maxLimit: number, minLimit: number) => {
     if (value <= minLimit) return { value: value + speed, direction: true }
@@ -51,20 +52,15 @@ const getScreenSize = () => ({
 });
 
 const getRandomPositionOutReference = (reference: number) => {
-    const li = [
-        () => Math.floor(Math.random()) + reference,
-        () => 0 - Math.floor(Math.random()),
-    ]
-    return li[Math.floor(Math.random() * li.length)]()
-};
 
-const getRandomDirection = () => Math.random() >= 0.5
+    return getRandomBoolean() ? getRandomValue(OUT_TOLERANCE + reference, reference) : getRandomValue(0, -OUT_TOLERANCE)
+};
 
 const getRandomVector = (outScreen?: boolean): Vector => ({
     x: outScreen ? getRandomPositionOutReference(window.innerWidth) : getRandomValue(window.innerWidth),
     y: outScreen ? getRandomPositionOutReference(window.innerHeight) : getRandomValue(window.innerHeight),
-    xDirection: getRandomDirection(),
-    yDirection: getRandomDirection(),
+    xDirection: getRandomBoolean(),
+    yDirection: getRandomBoolean(),
     xSpeed: getRandomValue(MAX_SPEED),
     ySpeed: getRandomValue(MAX_SPEED),
 })
