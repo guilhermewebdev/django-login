@@ -54,3 +54,4 @@ The project is now ready to run, and to do it you can run this command:
 If the database connection fails, try pressing `CTRL + C` to stop, and run it again. Or if it's successful open <a href='http://localhost/' target='_blank'>http://localhost/</a> in your browser and see the project running.
 
 ![Print Screen](print-screen-1.png)
+![Screen Gif](screen-gif.gif)
