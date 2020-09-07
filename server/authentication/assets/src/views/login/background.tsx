@@ -55,7 +55,6 @@ const getScreenSize = () => ({
 });
 
 const getRandomPositionOutReference = (reference: number) => {
-
     return getRandomBoolean() ? getRandomValue(OUT_TOLERANCE + reference, reference) : getRandomValue(0, -OUT_TOLERANCE)
 };
 
