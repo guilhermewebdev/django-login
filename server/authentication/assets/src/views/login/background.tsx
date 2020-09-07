@@ -13,19 +13,18 @@ type Vector = {
 const COLORS = ['#F25CA2', '#0433BF', '#032CA6', '#021859', '#0B9ED9', 'black', 'black']
 const OUT_TOLERANCE = 500
 const MAX_SPEED = 2
+const CURVES_AMOUNT = 35
+const CURVE_COLORS_AMOUNT = 6
+const MAX_CURVE_SIZE = 10
+const MIN_CURVE_SIZE = 1
 
 const getRandomValue = (max: number, min?: number) => Math.floor(Math.random() * max) + (!!min ? min : 0)
-const getRandomCurveSize = () => getRandomValue(30, 5)
 const getRandomColor = () => COLORS[getRandomValue(COLORS.length, 0)]
 const getCoursePoint = (direction: boolean, speed: number): number => direction ? + speed : - speed;
 
 const move = (value: number, speed: number, direction: boolean, maxLimit: number, minLimit: number) => {
-    if (value <= minLimit) {
-        return { value: value + speed, direction: true }
-    }
-    if (value >= maxLimit) {
-        return { value: value - speed, direction: false }
-    }
+    if (value <= minLimit) return { value: value + speed, direction: true }
+    if (value >= maxLimit) return { value: value - speed, direction: false }
     return {
         value: value + getCoursePoint(direction, speed),
         direction
@@ -70,25 +69,26 @@ const getRandomVector = (outScreen?: boolean): Vector => ({
     ySpeed: getRandomValue(MAX_SPEED),
 })
 
-const draw = (ctx: any, cvs: Array<any>, mouse: any) => {
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    return cvs.map(({ start, control, end, size, speed, colors }) => {
-        const grd = ctx.createLinearGradient(mouse.x, mouse.y, end.x, end.y);
-        ctx.restore();
-        ctx.beginPath()
-        Object.assign(ctx, {
-            fillStyle: grd,
-            strokeStyle: grd,
+const draw = (context: any, curves: Array<any>, mousePosition: any) => {
+    context.clearRect(-OUT_TOLERANCE, -OUT_TOLERANCE, window.innerWidth + OUT_TOLERANCE, window.innerHeight + OUT_TOLERANCE);
+    return curves.map((curve) => {
+        const { start, control, end, size, speed, colors } = curve;
+        const gradient = context.createLinearGradient(mousePosition.x, mousePosition.y, end.x, end.y);
+        context.restore();
+        context.beginPath()
+        Object.assign(context, {
+            fillStyle: gradient,
+            strokeStyle: gradient,
             lineWidth: size,
         })
-        grd.addColorStop(0, 'black')
-        grd.addColorStop(0.3, colors[0])
-        grd.addColorStop(0.5, colors[1])
-        grd.addColorStop(0.7, colors[2])
-        grd.addColorStop(1, 'black')
-        ctx.moveTo(start.x, start.y);
-        ctx.quadraticCurveTo(control.x, control.y, end.x, end.y);
-        ctx.stroke()
+        gradient.addColorStop(0, 'black')
+        gradient.addColorStop(0.3, colors[0])
+        gradient.addColorStop(0.5, colors[1])
+        gradient.addColorStop(0.7, colors[2])
+        gradient.addColorStop(1, 'black')
+        context.moveTo(start.x, start.y);
+        context.quadraticCurveTo(control.x, control.y, end.x, end.y);
+        context.stroke()
         return {
             size,
             start: getNewVectorPosition(start),
@@ -106,14 +106,14 @@ export default (props: any) => {
     const context = canvas?.getContext('2d');
     const [screenSize, setScreenSize] = React.useState(getScreenSize());
     const mouse = useMouseMove()
-    const curves = new Array(20)
+    const curves = new Array(CURVES_AMOUNT)
         .fill({})
         .map(() => ({
             start: getRandomVector(true),
             control: getRandomVector(),
             end: getRandomVector(true),
-            size: getRandomCurveSize(),
-            colors: new Array(3)
+            size: getRandomValue(MAX_CURVE_SIZE, MIN_CURVE_SIZE),
+            colors: new Array(CURVE_COLORS_AMOUNT)
                 .fill('')
                 .map(getRandomColor)
         }))
@@ -127,7 +127,7 @@ export default (props: any) => {
         const newCvs = draw(context, cvs, mouse.current);
         return requestAnimationFrame(() => render(newCvs))
     }
-    const startRendering = () => {
+    const startAnimation = () => {
         if (context) {
             const animationId = render(curves);
             const stopAnimation = () => {
@@ -138,11 +138,8 @@ export default (props: any) => {
             return stopAnimation
         }
     }
-
-    React.useEffect(startRendering, [context]);
-
+    React.useEffect(startAnimation, [context]);
     React.useLayoutEffect(keepMaxScreenSize, [])
-
     return (
         <canvas
             ref={canvasRef}
