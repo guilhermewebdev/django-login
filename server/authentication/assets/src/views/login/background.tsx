@@ -17,28 +17,27 @@ const getRandomCurveSize = () => Math.floor(Math.random() * 30) + 5
 const getRandomColor = () => COLORS[Math.floor(Math.random() * (COLORS.length)) + 0]
 const getCoursePoint = (direction: boolean, speed: number): number => direction ? + speed : - speed;
 
-const move = (value: number, speed: number, direction: boolean, maxLimit: number, minLimit: number, setDirection: (direction: boolean) => void) => {
+const move = (value: number, speed: number, direction: boolean, maxLimit: number, minLimit: number) => {
     if (value <= minLimit) {
-        setDirection(true);
-        return value + speed;
+        return { value: value + speed, direction: true }
     }
     if (value >= maxLimit) {
-        setDirection(false)
-        return value - speed;
+        return { value: value - speed, direction: false }
     }
-    return value + getCoursePoint(direction, speed);
+    return {
+        value: value + getCoursePoint(direction, speed),
+        direction
+    }
 }
 
 const getNewVectorPosition = ({ x, y, xDirection, yDirection, xSpeed, ySpeed }: Vector): Vector => {
+    const newX = move(x, xSpeed, xDirection, window.innerWidth + OUT_TOLERANCE, -OUT_TOLERANCE)
+    const newY = move(y, ySpeed, yDirection, window.innerHeight + OUT_TOLERANCE, -OUT_TOLERANCE)
     return {
-        x: move(x, xSpeed, xDirection, window.innerWidth + OUT_TOLERANCE, -OUT_TOLERANCE, (direction: boolean) => {
-            xDirection = direction;
-        }),
-        y: move(y, ySpeed, yDirection, window.innerHeight + OUT_TOLERANCE, -OUT_TOLERANCE, (direction: boolean) => {
-            yDirection = direction;
-        }),
-        xDirection,
-        yDirection,
+        x: newX.value,
+        y: newY.value,
+        xDirection: newX.direction,
+        yDirection: newY.direction,
         xSpeed,
         ySpeed,
     }
