@@ -23,7 +23,7 @@ Whit the project in your machine, you need to create a .env file whit database c
     SECRET_KEY=<Django secret key>
 ```
 
-Read more about Django Secret Key [here](https://docs.djangoproject.com/en/2.2/ref/settings/#std:setting-SECRET_KEY). The database credentials are configured into docker-compose.yml file, the default is:
+Read more about Django Secret Key [here](https://docs.djangoproject.com/en/2.2/ref/settings/#std:setting-SECRET_KEY). The database credentials are configured into docker-compose.yml file, present in the project root, the default is:
 
 ```
     DB=database
@@ -50,4 +50,4 @@ The project is ready to run, you can make it running this command:
     docker-compose up
 ```
 
-If the database connection failed, try stop pressing CTRL + C and run again. Or if running successful open http://localhost/ in your browser and see the project running.
+If the database connection failed, try stop pressing `CTRL + C` and run again. Or if running successful open http://localhost/ in your browser and see the project running.
