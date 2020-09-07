@@ -1,7 +1,7 @@
 import * as React from 'react';
 import useMouseMove from './mouseHook';
 
-type Point = {
+type Vector = {
     x: number,
     y: number,
     xDirection: boolean,
@@ -10,7 +10,11 @@ type Point = {
     ySpeed: number,
 }
 
-const move = (value: number, speed: number, direction: boolean, reference: number, client: number, setDirection: (direction: boolean) => void) => {
+const COLORS = ['#F25CA2', '#0433BF', '#032CA6', '#021859', '#0B9ED9', 'black', 'black']
+const getRandomCurveSize = () => Math.floor(Math.random() * 30) + 5
+const getRandomColor = () => COLORS[Math.floor(Math.random() * (COLORS.length)) - 0]
+
+const move = (value: number, speed: number, direction: boolean, reference: number, setDirection: (direction: boolean) => void) => {
     if (value <= -500) {
         setDirection(true);
         return value + speed;
@@ -22,12 +26,12 @@ const move = (value: number, speed: number, direction: boolean, reference: numbe
     return direction ? value + speed : value - speed;
 }
 
-const getNewPosition = ({ x, y, xDirection, yDirection, xSpeed, ySpeed }: Point, mouse: any): Point => {
+const getNewVectorPosition = ({ x, y, xDirection, yDirection, xSpeed, ySpeed }: Vector): Vector => {
     return {
-        x: move(x, xSpeed, xDirection, window.innerWidth, mouse.x, (direction: boolean) => {
+        x: move(x, xSpeed, xDirection, window.innerWidth, (direction: boolean) => {
             xDirection = direction;
         }),
-        y: move(y, ySpeed, yDirection, window.innerHeight, mouse.y, (direction: boolean) => {
+        y: move(y, ySpeed, yDirection, window.innerHeight, (direction: boolean) => {
             yDirection = direction;
         }),
         xDirection,
@@ -37,7 +41,7 @@ const getNewPosition = ({ x, y, xDirection, yDirection, xSpeed, ySpeed }: Point,
     }
 };
 
-const sizeFactory = () => ({
+const getScreenSize = () => ({
     height: window.innerHeight,
     width: window.innerWidth
 })
@@ -50,7 +54,7 @@ const randomOut = (reference: number) => {
     return li[Math.floor(Math.random() * li.length)]()
 }
 
-const randomXY = (outScreen?: boolean): Point => {
+const getRandomXY = (outScreen?: boolean): Vector => {
     const outs: Array<Boolean> = [false, false]
     if (outScreen) {
         outs[Math.floor(Math.random() * outs.length) + 0] = true;
@@ -71,9 +75,9 @@ const randomXY = (outScreen?: boolean): Point => {
 const draw = (ctx: any, cvs: Array<any>, mouse: any) => {
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
     return cvs.map(({ start, control, end, size, speed, colors }) => {
-        const grd = ctx?.createLinearGradient(mouse.x, mouse.y, end.x, end.y);
+        const grd = ctx.createLinearGradient(mouse.x, mouse.y, end.x, end.y);
         ctx.restore();
-        ctx?.beginPath()
+        ctx.beginPath()
         Object.assign(ctx, {
             fillStyle: grd,
             strokeStyle: grd,
@@ -84,73 +88,68 @@ const draw = (ctx: any, cvs: Array<any>, mouse: any) => {
         grd.addColorStop(0.5, colors[1])
         grd.addColorStop(0.7, colors[2])
         grd.addColorStop(1, 'black')
-        ctx?.moveTo(start.x, start.y);
-        ctx?.quadraticCurveTo(control.x, control.y, end.x, end.y);
-        ctx?.stroke()
+        ctx.moveTo(start.x, start.y);
+        ctx.quadraticCurveTo(control.x, control.y, end.x, end.y);
+        ctx.stroke()
         return {
             size,
-            start: getNewPosition(start, mouse),
-            control: getNewPosition(control, mouse),
-            end: getNewPosition(end, mouse),
+            start: getNewVectorPosition(start),
+            control: getNewVectorPosition(control),
+            end: getNewVectorPosition(end),
             speed,
             colors,
         }
     })
 }
 
-
-
 export default (props: any) => {
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
     const canvas: HTMLCanvasElement | null = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    const [size, setSize] = React.useState(sizeFactory());
+    const context = canvas?.getContext('2d');
+    const [screenSize, setScreenSize] = React.useState(getScreenSize());
     const mouse = useMouseMove()
-    const colors = ['#F25CA2', '#0433BF', '#032CA6', '#021859', '#0B9ED9', 'black', 'black']
     const curves = new Array(20)
         .fill({})
         .map(() => ({
-            start: randomXY(true),
-            control: randomXY(),
-            end: randomXY(true),
-            size: Math.floor(Math.random() * 30) + 5,
-            colors: new Array(3).fill('').map(() => (colors[Math.floor(Math.random() * (colors.length)) - 0]))
+            start: getRandomXY(true),
+            control: getRandomXY(),
+            end: getRandomXY(true),
+            size: getRandomCurveSize(),
+            colors: new Array(3)
+                .fill('')
+                .map(getRandomColor)
         }))
-    const updateSize = () => {
-        setSize(sizeFactory())
+    const updateScreenSize = () => setScreenSize(getScreenSize())
+    const keepMaxScreenSize = () => {
+        window.addEventListener('resize', updateScreenSize)
+        updateScreenSize()
+        return () => window.removeEventListener('resize', updateScreenSize);
     }
-
-    const render = (context: any, cvs: any) => {
+    const render = (cvs: any): number => {
         const newCvs = draw(context, cvs, mouse.current);
-        const animationId = requestAnimationFrame(() => {
-            render(context, newCvs);
-        })
-        return { newCvs, animationId, context, mouse };
+        return requestAnimationFrame(() => render(newCvs))
     }
-
-    React.useEffect(() => {
-        if (ctx) {
-            const { animationId, context } = render(ctx, curves);
-            return () => {
+    const startRendering = () => {
+        if (context) {
+            const animationId = render(curves);
+            const stopAnimation = () => {
                 cancelAnimationFrame(animationId);
-                context.clearRect(0, 0, size.width, size.height);
+                context.clearRect(0, 0, screenSize.width, screenSize.height);
                 context.restore();
             }
+            return stopAnimation
         }
-    }, [ctx]);
+    }
 
-    // Keep max screen size
-    React.useLayoutEffect(() => {
-        window.addEventListener('resize', updateSize)
-        updateSize()
-        return () => window.removeEventListener('resize', updateSize);
-    }, [])
+    React.useEffect(startRendering, [context]);
+
+    React.useLayoutEffect(keepMaxScreenSize, [])
 
     return (
         <canvas
             ref={canvasRef}
-            width={size.width}
-            height={size.height}
+            width={screenSize.width}
+            height={screenSize.height}
             className="background"
             {...props}
         />
