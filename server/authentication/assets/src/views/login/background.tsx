@@ -1,13 +1,23 @@
 import * as React from 'react';
 import useMouseMove from './mouseHook';
 
+type Point = {
+    position: number
+    direction: boolean,
+    speed: number,
+}
+
 type Vector = {
-    x: number,
-    y: number,
-    xDirection: boolean,
-    yDirection: boolean,
-    xSpeed: number,
-    ySpeed: number,
+    x: Point,
+    y: Point,
+}
+
+type Curve = {
+    start: Vector,
+    control: Vector,
+    end: Vector,
+    size: number,
+    colors: Array<String>,
 }
 
 const COLORS = ['#F25CA2', '#0433BF', '#032CA6', '#021859', '#0B9ED9', 'black', 'black']
@@ -23,28 +33,21 @@ const getRandomColor = () => COLORS[getRandomValue(COLORS.length, 0)]
 const getCoursePoint = (direction: boolean, speed: number): number => direction ? + speed : - speed;
 const getRandomBoolean = () => Math.random() >= 0.5
 
-const move = (value: number, speed: number, direction: boolean, maxLimit: number, minLimit: number) => {
-    if (value <= minLimit) return { value: value + speed, direction: true }
-    if (value >= maxLimit) return { value: value - speed, direction: false }
+const move = (point: Point, maxLimit: number, minLimit: number): Point => {
+    const { position, speed, direction } = point;
+    if (position <= minLimit) return { position: position + speed, direction: true, speed }
+    if (position >= maxLimit) return { position: position - speed, direction: false, speed }
     return {
-        value: value + getCoursePoint(direction, speed),
-        direction
+        position: position + getCoursePoint(direction, speed),
+        direction,
+        speed
     }
 }
 
-const getNewVectorPosition = (vector: Vector): Vector => {
-    const { x, y, xDirection, yDirection, xSpeed, ySpeed } = vector;
-    const newX = move(x, xSpeed, xDirection, window.innerWidth + OUT_TOLERANCE, -OUT_TOLERANCE)
-    const newY = move(y, ySpeed, yDirection, window.innerHeight + OUT_TOLERANCE, -OUT_TOLERANCE)
-    return {
-        x: newX.value,
-        y: newY.value,
-        xDirection: newX.direction,
-        yDirection: newY.direction,
-        xSpeed,
-        ySpeed,
-    }
-};
+const getNewVectorPosition = ({ x, y }: Vector): Vector => ({
+    x: move(x, window.innerWidth + OUT_TOLERANCE, -OUT_TOLERANCE),
+    y: move(y, window.innerHeight + OUT_TOLERANCE, -OUT_TOLERANCE),
+})
 
 const getScreenSize = () => ({
     height: window.innerHeight,
@@ -56,20 +59,22 @@ const getRandomPositionOutReference = (reference: number) => {
     return getRandomBoolean() ? getRandomValue(OUT_TOLERANCE + reference, reference) : getRandomValue(0, -OUT_TOLERANCE)
 };
 
-const getRandomVector = (outScreen?: boolean): Vector => ({
-    x: outScreen ? getRandomPositionOutReference(window.innerWidth) : getRandomValue(window.innerWidth),
-    y: outScreen ? getRandomPositionOutReference(window.innerHeight) : getRandomValue(window.innerHeight),
-    xDirection: getRandomBoolean(),
-    yDirection: getRandomBoolean(),
-    xSpeed: getRandomValue(MAX_SPEED),
-    ySpeed: getRandomValue(MAX_SPEED),
+const getRandomPoint = (outScreen?: boolean): Point => ({
+    position: outScreen ? getRandomPositionOutReference(window.innerWidth) : getRandomValue(window.innerWidth),
+    direction: getRandomBoolean(),
+    speed: getRandomValue(MAX_SPEED),
 })
 
-const draw = (context: any, curves: Array<any>, mousePosition: any) => {
+const getRandomVector = (outScreen?: boolean): Vector => ({
+    x: getRandomPoint(outScreen),
+    y: getRandomPoint(outScreen)
+})
+
+const draw = (context: any, curves: Array<Curve>, mousePosition: { x: number, y: number }) => {
     context.clearRect(-OUT_TOLERANCE, -OUT_TOLERANCE, window.innerWidth + OUT_TOLERANCE, window.innerHeight + OUT_TOLERANCE);
     return curves.map((curve) => {
-        const { start, control, end, size, speed, colors } = curve;
-        const gradient = context.createLinearGradient(mousePosition.x, mousePosition.y, end.x, end.y);
+        const { start, control, end, size, colors } = curve;
+        const gradient = context.createLinearGradient(mousePosition.x, mousePosition.y, end.x.position, end.y.position);
         context.restore();
         context.beginPath()
         Object.assign(context, {
@@ -82,15 +87,14 @@ const draw = (context: any, curves: Array<any>, mousePosition: any) => {
         gradient.addColorStop(0.5, colors[1])
         gradient.addColorStop(0.7, colors[2])
         gradient.addColorStop(1, 'black')
-        context.moveTo(start.x, start.y);
-        context.quadraticCurveTo(control.x, control.y, end.x, end.y);
+        context.moveTo(start.x.position, start.y.position);
+        context.quadraticCurveTo(control.x.position, control.y.position, end.x.position, end.y.position);
         context.stroke()
         return {
             size,
             start: getNewVectorPosition(start),
             control: getNewVectorPosition(control),
             end: getNewVectorPosition(end),
-            speed,
             colors,
         }
     })
@@ -102,7 +106,7 @@ export default (props: any) => {
     const context = canvas?.getContext('2d');
     const [screenSize, setScreenSize] = React.useState(getScreenSize());
     const mouse = useMouseMove()
-    const curves = new Array(CURVES_AMOUNT)
+    const curves: Array<Curve> = new Array(CURVES_AMOUNT)
         .fill({})
         .map(() => ({
             start: getRandomVector(true),
@@ -119,8 +123,8 @@ export default (props: any) => {
         updateScreenSize()
         return () => window.removeEventListener('resize', updateScreenSize);
     }
-    const render = (cvs: any): number => {
-        const newCvs = draw(context, cvs, mouse.current);
+    const render = (cvs: Array<Curve>): number => {
+        const newCvs: Array<Curve> = draw(context, cvs, mouse.current);
         return requestAnimationFrame(() => render(newCvs))
     }
     const startAnimation = () => {
