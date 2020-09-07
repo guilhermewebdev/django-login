@@ -50,14 +50,14 @@ const randomOut = (reference: number) => {
     return li[Math.floor(Math.random() * li.length)]()
 }
 
-const randomXY = (out?: boolean): Point => {
-    const outs = [false, false]
-    if (out) {
+const randomXY = (outScreen?: boolean): Point => {
+    const outs: Array<Boolean> = [false, false]
+    if (outScreen) {
         outs[Math.floor(Math.random() * outs.length) + 0] = true;
     }
     const line = {
-        x: out ? randomOut(window.innerWidth) : Math.floor(Math.random() * window.innerWidth),
-        y: out ? randomOut(window.innerHeight) : Math.floor(Math.random() * window.innerHeight),
+        x: outScreen ? randomOut(window.innerWidth) : Math.floor(Math.random() * window.innerWidth),
+        y: outScreen ? randomOut(window.innerHeight) : Math.floor(Math.random() * window.innerHeight),
     }
     return {
         ...line,
