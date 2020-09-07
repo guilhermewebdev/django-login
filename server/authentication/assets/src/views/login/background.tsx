@@ -19,27 +19,6 @@ const move = (value: number, speed: number, direction: boolean, reference: numbe
         setDirection(false)
         return value - speed;
     }
-    // const diff = value - client;
-    // const distance = 40;
-    // if (diff > 0) {
-    //     const sumSpeed = Math.atan(diff) * 5;
-    //     if (diff <= distance) {
-    //         if (direction) {
-    //             return value + speed + sumSpeed
-    //         } else {
-    //             return value + speed - sumSpeed
-    //         }
-    //     }
-    // } else {
-    //     const sumSpeed = -Math.atan(diff) * 2;
-    //     if (distance + diff >= 0) {
-    //         if (direction) {
-    //             return value - sumSpeed;
-    //         } else {
-    //             return value + sumSpeed;
-    //         }
-    //     }
-    // }
     return direction ? value + speed : value - speed;
 }
 
