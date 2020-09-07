@@ -30,7 +30,8 @@ const move = (value: number, speed: number, direction: boolean, maxLimit: number
     }
 }
 
-const getNewVectorPosition = ({ x, y, xDirection, yDirection, xSpeed, ySpeed }: Vector): Vector => {
+const getNewVectorPosition = (vector: Vector): Vector => {
+    const { x, y, xDirection, yDirection, xSpeed, ySpeed } = vector;
     const newX = move(x, xSpeed, xDirection, window.innerWidth + OUT_TOLERANCE, -OUT_TOLERANCE)
     const newY = move(y, ySpeed, yDirection, window.innerHeight + OUT_TOLERANCE, -OUT_TOLERANCE)
     return {
