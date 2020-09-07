@@ -12,9 +12,11 @@ type Vector = {
 
 const COLORS = ['#F25CA2', '#0433BF', '#032CA6', '#021859', '#0B9ED9', 'black', 'black']
 const OUT_TOLERANCE = 500
+const MAX_SPEED = 2
 
-const getRandomCurveSize = () => Math.floor(Math.random() * 30) + 5
-const getRandomColor = () => COLORS[Math.floor(Math.random() * (COLORS.length)) + 0]
+const getRandomValue = (max: number, min?: number) => Math.floor(Math.random() * max) + (!!min ? min : 0)
+const getRandomCurveSize = () => getRandomValue(30, 5)
+const getRandomColor = () => COLORS[getRandomValue(COLORS.length, 0)]
 const getCoursePoint = (direction: boolean, speed: number): number => direction ? + speed : - speed;
 
 const move = (value: number, speed: number, direction: boolean, maxLimit: number, minLimit: number) => {
@@ -47,33 +49,26 @@ const getNewVectorPosition = (vector: Vector): Vector => {
 const getScreenSize = () => ({
     height: window.innerHeight,
     width: window.innerWidth
-})
+});
 
-const randomOut = (reference: number) => {
+const getRandomPositionOutReference = (reference: number) => {
     const li = [
         () => Math.floor(Math.random()) + reference,
         () => 0 - Math.floor(Math.random()),
     ]
     return li[Math.floor(Math.random() * li.length)]()
-}
+};
 
-const getRandomXY = (outScreen?: boolean): Vector => {
-    const outs: Array<Boolean> = [false, false]
-    if (outScreen) {
-        outs[Math.floor(Math.random() * outs.length) + 0] = true;
-    }
-    const line = {
-        x: outScreen ? randomOut(window.innerWidth) : Math.floor(Math.random() * window.innerWidth),
-        y: outScreen ? randomOut(window.innerHeight) : Math.floor(Math.random() * window.innerHeight),
-    }
-    return {
-        ...line,
-        xDirection: Math.floor(Math.random() * 10) > 4,
-        yDirection: Math.floor(Math.random() * 10) > 4,
-        xSpeed: Math.floor(Math.random() * 2),
-        ySpeed: Math.floor(Math.random() * 2),
-    }
-}
+const getRandomDirection = () => Math.random() >= 0.5
+
+const getRandomVector = (outScreen?: boolean): Vector => ({
+    x: outScreen ? getRandomPositionOutReference(window.innerWidth) : getRandomValue(window.innerWidth),
+    y: outScreen ? getRandomPositionOutReference(window.innerHeight) : getRandomValue(window.innerHeight),
+    xDirection: getRandomDirection(),
+    yDirection: getRandomDirection(),
+    xSpeed: getRandomValue(MAX_SPEED),
+    ySpeed: getRandomValue(MAX_SPEED),
+})
 
 const draw = (ctx: any, cvs: Array<any>, mouse: any) => {
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
@@ -114,9 +109,9 @@ export default (props: any) => {
     const curves = new Array(20)
         .fill({})
         .map(() => ({
-            start: getRandomXY(true),
-            control: getRandomXY(),
-            end: getRandomXY(true),
+            start: getRandomVector(true),
+            control: getRandomVector(),
+            end: getRandomVector(true),
             size: getRandomCurveSize(),
             colors: new Array(3)
                 .fill('')
