@@ -12,14 +12,6 @@ type Vector = {
     y: Point,
 }
 
-type Curve = {
-    start: Vector,
-    control: Vector,
-    end: Vector,
-    size: number,
-    colors: Array<String>,
-}
-
 const COLORS = ['#F25CA2', '#0433BF', '#032CA6', '#021859', '#0B9ED9', 'black', 'black']
 const OUT_TOLERANCE = 500
 const MAX_SPEED = 2
@@ -33,7 +25,7 @@ const getRandomColor = () => COLORS[getRandomValue(COLORS.length, 0)]
 const getCoursePoint = (direction: boolean, speed: number): number => direction ? + speed : - speed;
 const getRandomBoolean = () => Math.random() >= 0.5
 
-const move = (point: Point, maxLimit: number, minLimit: number): Point => {
+const movePoint = (point: Point, maxLimit: number, minLimit: number): Point => {
     const { position, speed, direction } = point;
     if (position <= minLimit) return { position: position + speed, direction: true, speed }
     if (position >= maxLimit) return { position: position - speed, direction: false, speed }
@@ -45,8 +37,8 @@ const move = (point: Point, maxLimit: number, minLimit: number): Point => {
 }
 
 const getNewVectorPosition = ({ x, y }: Vector): Vector => ({
-    x: move(x, window.innerWidth + OUT_TOLERANCE, -OUT_TOLERANCE),
-    y: move(y, window.innerHeight + OUT_TOLERANCE, -OUT_TOLERANCE),
+    x: movePoint(x, window.innerWidth + OUT_TOLERANCE, -OUT_TOLERANCE),
+    y: movePoint(y, window.innerHeight + OUT_TOLERANCE, -OUT_TOLERANCE),
 })
 
 const getScreenSize = () => ({
@@ -55,7 +47,6 @@ const getScreenSize = () => ({
 });
 
 const getRandomPositionOutReference = (reference: number) => {
-
     return getRandomBoolean() ? getRandomValue(OUT_TOLERANCE + reference, reference) : getRandomValue(0, -OUT_TOLERANCE)
 };
 
@@ -70,33 +61,58 @@ const getRandomVector = (outScreen?: boolean): Vector => ({
     y: getRandomPoint(outScreen)
 })
 
-const draw = (context: any, curves: Array<Curve>, mousePosition: { x: number, y: number }) => {
-    context.clearRect(-OUT_TOLERANCE, -OUT_TOLERANCE, window.innerWidth + OUT_TOLERANCE, window.innerHeight + OUT_TOLERANCE);
-    return curves.map((curve) => {
-        const { start, control, end, size, colors } = curve;
-        const gradient = context.createLinearGradient(mousePosition.x, mousePosition.y, end.x.position, end.y.position);
-        context.restore();
-        context.beginPath()
+class Curve {
+    start: Vector;
+    control: Vector;
+    end: Vector;
+    size: number;
+    colors: Array<string>;
+
+    constructor(start: Vector, control: Vector, end: Vector, size: number, colors: Array<string>) {
+        this.start = start
+        this.control = control
+        this.end = end
+        this.size = size
+        this.colors = colors
+    }
+
+    createGradient(context: CanvasRenderingContext2D, mousePosition: { x: number, y: number }) {
+        const gradient = context.createLinearGradient(mousePosition.x, mousePosition.y, this.end.x.position, this.end.y.position);
+        gradient.addColorStop(0, 'black')
+        gradient.addColorStop(0.3, this.colors[0])
+        gradient.addColorStop(0.5, this.colors[1])
+        gradient.addColorStop(0.7, this.colors[2])
+        gradient.addColorStop(1, 'black')
         Object.assign(context, {
             fillStyle: gradient,
             strokeStyle: gradient,
-            lineWidth: size,
+            lineWidth: this.size,
         })
-        gradient.addColorStop(0, 'black')
-        gradient.addColorStop(0.3, colors[0])
-        gradient.addColorStop(0.5, colors[1])
-        gradient.addColorStop(0.7, colors[2])
-        gradient.addColorStop(1, 'black')
-        context.moveTo(start.x.position, start.y.position);
-        context.quadraticCurveTo(control.x.position, control.y.position, end.x.position, end.y.position);
+    }
+
+    move() {
+        this.start = getNewVectorPosition(this.start);
+        this.control = getNewVectorPosition(this.control);
+        this.end = getNewVectorPosition(this.end)
+    }
+
+    draw(context: CanvasRenderingContext2D) {
+        context.restore();
+        context.beginPath()
+        context.moveTo(this.start.x.position, this.start.y.position);
+        context.quadraticCurveTo(this.control.x.position, this.control.y.position, this.end.x.position, this.end.y.position);
         context.stroke()
-        return {
-            size,
-            start: getNewVectorPosition(start),
-            control: getNewVectorPosition(control),
-            end: getNewVectorPosition(end),
-            colors,
-        }
+    }
+
+}
+
+const draw = (context: CanvasRenderingContext2D, curves: Array<Curve>, mousePosition: { x: number, y: number }) => {
+    context.clearRect(-OUT_TOLERANCE, -OUT_TOLERANCE, window.innerWidth + OUT_TOLERANCE, window.innerHeight + OUT_TOLERANCE);
+    return curves.map((curve) => {
+        curve.createGradient(context, mousePosition)
+        curve.draw(context);
+        curve.move();
+        return curve;
     })
 }
 
@@ -108,27 +124,27 @@ export default (props: any) => {
     const mouse = useMouseMove()
     const curves: Array<Curve> = new Array(CURVES_AMOUNT)
         .fill({})
-        .map(() => ({
-            start: getRandomVector(true),
-            control: getRandomVector(),
-            end: getRandomVector(true),
-            size: getRandomValue(MAX_CURVE_SIZE, MIN_CURVE_SIZE),
-            colors: new Array(CURVE_COLORS_AMOUNT)
+        .map(() => new Curve(
+            getRandomVector(true),
+            getRandomVector(),
+            getRandomVector(true),
+            getRandomValue(MAX_CURVE_SIZE, MIN_CURVE_SIZE),
+            new Array(CURVE_COLORS_AMOUNT)
                 .fill('')
                 .map(getRandomColor)
-        }))
+        ))
     const updateScreenSize = () => setScreenSize(getScreenSize())
     const keepMaxScreenSize = () => {
         window.addEventListener('resize', updateScreenSize)
         updateScreenSize()
         return () => window.removeEventListener('resize', updateScreenSize);
     }
-    const render = (cvs: Array<Curve>): number => {
-        const newCvs: Array<Curve> = draw(context, cvs, mouse.current);
-        return requestAnimationFrame(() => render(newCvs))
-    }
     const startAnimation = () => {
         if (context) {
+            const render = (cvs: Array<Curve>): number => {
+                const newCvs: Array<Curve> = draw(context, cvs, mouse.current);
+                return requestAnimationFrame(() => render(newCvs))
+            }
             const animationId = render(curves);
             const stopAnimation = () => {
                 cancelAnimationFrame(animationId);

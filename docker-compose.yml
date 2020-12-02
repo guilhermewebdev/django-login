@@ -6,7 +6,7 @@ services:
         build: ./server/authentication/assets
         restart: always
         volumes:
-            - ./server/authentication/assets:/app
+            - ./server/authentication/assets:/app:z
         command: npx webpack -w
         stdin_open: true
 
