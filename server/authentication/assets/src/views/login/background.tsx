@@ -76,7 +76,7 @@ class Curve {
         this.colors = colors
     }
 
-    createGradient(context: CanvasRenderingContext2D, mousePosition: any) {
+    createGradient(context: CanvasRenderingContext2D, mousePosition: { x: number, y: number }) {
         const gradient = context.createLinearGradient(mousePosition.x, mousePosition.y, this.end.x.position, this.end.y.position);
         gradient.addColorStop(0, 'black')
         gradient.addColorStop(0.3, this.colors[0])
